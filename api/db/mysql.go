@@ -36,13 +36,10 @@ func GetDB() *sql.DB {
 }
 
 func GetQueueData() (string, error) {
-	var data string
 	db := GetDB()
-	err := db.QueryRow("SELECT data FROM queue LIMIT 1").Scan(&data)
+	var data string
+	err := db.QueryRow("SELECT data FROM queue WHERE processed_at IS NULL ORDER BY created_at ASC LIMIT 1").Scan(&data)
 	if err != nil {
-		if err != sql.ErrNoRows {
-			log.Printf("Error fetching queue data from database: %v\n", err)
-		}
 		return "", err
 	}
 	return data, nil

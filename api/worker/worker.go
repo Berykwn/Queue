@@ -7,8 +7,6 @@ import (
 	"github.com/Berykwn/Queue/api/db"
 )
 
-// var processing bool
-
 func StartWorker() {
 	go func() {
 		for {
@@ -19,15 +17,18 @@ func StartWorker() {
 				continue
 			}
 
-			// Jika ada antrian, proses
+			// Jika ada antrian yang belum diproses, proses
 			if data != "" {
 				processQueue(data)
+				err := db.UpdateQueueProcessedAt(data)
+				if err != nil {
+					log.Printf("Error updating queue processed at time: %v\n", err)
+				}
 			} else {
 				log.Println("No queue data found, waiting for the next check...")
+				// Tunggu sebelum mengambil antrian berikutnya
+				time.Sleep(3 * time.Second)
 			}
-
-			// Tunggu sebelum mengambil antrian berikutnya
-			time.Sleep(3 * time.Second)
 		}
 	}()
 }

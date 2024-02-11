@@ -1,5 +1,3 @@
-// main.go
-
 package main
 
 import (
@@ -7,8 +5,10 @@ import (
 	"net/http"
 
 	"github.com/Berykwn/Queue/api/api"
-
 	"github.com/Berykwn/Queue/api/worker"
+
+	"github.com/gorilla/handlers"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -18,6 +18,9 @@ func main() {
 	// Inisialisasi router
 	router := api.NewRouter()
 
-	// Mulai server HTTP
-	log.Fatal(http.ListenAndServe(":8080", router))
+	// Cors handler
+	corsHandler := cors.AllowAll().Handler(router)
+
+	// Mulai server HTTP dengan handler Cors
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(handlers.AllowedOrigins([]string{"*"}))(corsHandler)))
 }

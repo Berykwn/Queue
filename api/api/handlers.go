@@ -21,7 +21,7 @@ func ProduceQueueHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Simpan ke dalam database
 	database := db.GetDB()
-	_, err = database.Exec("INSERT INTO queue (data) VALUES (?)", requestData.Data)
+	_, err = database.Exec("INSERT INTO queue (data, status) VALUES (?, ?)", requestData.Data, "pending") // Menambahkan nilai status "pending"
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -42,16 +42,32 @@ func ProduceQueueHandler(w http.ResponseWriter, r *http.Request) {
 func MonitorQueueHandler(w http.ResponseWriter, r *http.Request) {
 	// Query database untuk mendapatkan informasi tentang antrian
 	database := db.GetDB()
-	var totalQueue int
-	err := database.QueryRow("SELECT COUNT(*) FROM queue").Scan(&totalQueue)
+	rows, err := database.Query("SELECT id, data, processed_at FROM queue")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	defer rows.Close()
+
+	type Queue struct {
+		ID          int    `json:"id"`
+		Data        string `json:"data"`
+		ProcessedAt string `json:"processed_at"`
+	}
+
+	var queues []Queue
+	for rows.Next() {
+		var queue Queue
+		err := rows.Scan(&queue.ID, &queue.Data, &queue.ProcessedAt)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		queues = append(queues, queue)
+	}
 
 	// Kirim respons
-	response := map[string]int{"total_queue": totalQueue}
-	jsonResponse, err := json.Marshal(response)
+	jsonResponse, err := json.Marshal(queues)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
