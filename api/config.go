@@ -1,5 +1,3 @@
-// config.go
-
 package main
 
 const (

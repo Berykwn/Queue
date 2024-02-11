@@ -18,9 +18,7 @@ func main() {
 	// Inisialisasi router
 	router := api.NewRouter()
 
-	// Cors handler
 	corsHandler := cors.AllowAll().Handler(router)
 
-	// Mulai server HTTP dengan handler Cors
 	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(handlers.AllowedOrigins([]string{"*"}))(corsHandler)))
 }
