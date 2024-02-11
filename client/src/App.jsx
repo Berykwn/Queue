@@ -3,6 +3,7 @@ import axios from "axios";
 
 function App() {
   const [queues, setQueues] = useState([]);
+  const [inputData, setInputData] = useState("");
 
   useEffect(() => {
     fetchQueues();
@@ -17,14 +18,32 @@ function App() {
     }
   };
 
+  const handleAddData = async () => {
+    try {
+      const response = await axios.post("http://localhost:8080/produce", {
+        data: "testdong",
+      });
+      console.log("Response:", response);
+      setInputData("");
+      alert("Data added successfully");
+      fetchQueues();
+    } catch (error) {
+      console.error("Error adding data:", error.response);
+      alert("Failed to add data: " + error.message);
+    }
+  };
+
   return (
     <div>
       <h1>Queue Monitor</h1>
+      <div>
+        <button onClick={handleAddData}>Add Data</button>
+      </div>
       <table>
         <thead>
           <tr>
             <th>List</th>
-            <th>Status</th>
+            <th>processed at</th>
           </tr>
         </thead>
         <tbody>
